@@ -20,12 +20,12 @@ const siteHeaderElement = siteMainElement.querySelector(`.main__control`);
 
 render(siteHeaderElement, createSiteMenuTemplate(), `beforeend`);
 
-const filters = generateFilters();
+const tasks = generateTasks(TASK_COUNT);
+const filters = generateFilters(tasks);
 render(siteMainElement, createFilterTemplate(filters), `beforeend`);
 render(siteMainElement, createBoardTemplate(), `beforeend`);
 
 const taskListElement = siteMainElement.querySelector(`.board__tasks`);
-const tasks = generateTasks(TASK_COUNT);
 render(taskListElement, createTaskEditTemplate(tasks[0]), `beforeend`);
 
 let showingTasksCount = SHOWING_TASKS_COUNT_ON_START;
