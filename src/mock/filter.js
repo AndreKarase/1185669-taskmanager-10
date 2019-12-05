@@ -29,8 +29,8 @@ const generateFilters = (tasks) => {
       const today = new Date();
       if (task.dueDate instanceof Date &&
         task.dueDate.getDate() === today.getDate() &&
-        task.dueDate.getDate() === today.getMonth() &&
-        task.dueDate.getDate() === today.getFullYear()) {
+        task.dueDate.getMonth() === today.getMonth() &&
+        task.dueDate.getFullYear() === today.getFullYear()) {
         result.today++;
       }
       if (task.isFavorite) {
