@@ -26,8 +26,11 @@ const generateFilters = (tasks) => {
         task.dueDate < Date.now()) {
         result.overdue++;
       }
+      const today = new Date();
       if (task.dueDate instanceof Date &&
-        task.dueDate.getDate() === new Date().getDate()) {
+        task.dueDate.getDate() === today.getDate() &&
+        task.dueDate.getDate() === today.getMonth() &&
+        task.dueDate.getDate() === today.getFullYear()) {
         result.today++;
       }
       if (task.isFavorite) {
@@ -36,7 +39,7 @@ const generateFilters = (tasks) => {
       if (Object.values(task.repeatingDays).some((it) => it)) {
         result.repeating++;
       }
-      if (Array.from(task.tags).length !== 0) {
+      if (task.tags.size !== 0) {
         result.tags++;
       }
       if (task.isArchive) {
