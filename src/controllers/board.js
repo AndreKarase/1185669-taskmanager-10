@@ -13,8 +13,6 @@ export default class BoardController {
   }
 
   render(tasks) {
-    const container = this._container.getElement();
-
     const renderTask = (task) => {
       const taskComponent = new TaskComponent(task);
       const taskEditComponent = new TaskEditComponent(task);
@@ -30,14 +28,14 @@ export default class BoardController {
       render(taskListElement, taskComponent, `beforeend`);
     };
 
-    const taskListElement = container.querySelector(`.board__tasks`);
+    const taskListElement = this._container.querySelector(`.board__tasks`);
 
     let showingTasksCount = SHOWING_TASKS_COUNT_ON_START;
     for (let i = 0; i < showingTasksCount; i++) {
       renderTask(tasks[i]);
     }
 
-    render(container, this._loadMoreButtonComponent, `beforeend`);
+    render(this._container, this._loadMoreButtonComponent, `beforeend`);
 
     this._loadMoreButtonComponent.setClickHandler(() => {
       const prevTaskCount = showingTasksCount;

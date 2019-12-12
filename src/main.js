@@ -20,5 +20,5 @@ render(siteMainElement, new FilterComponent(filters), `beforeend`);
 const boardComponent = new BoardComponent();
 render(siteMainElement, boardComponent, `beforeend`);
 
-const boardController = new BoardController(boardComponent);
+const boardController = new BoardController(boardComponent.getElement());
 boardController.render(tasks);
