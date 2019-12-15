@@ -1,4 +1,4 @@
-import AbstractComponent from './abstract-component.js';
+import AbstractSmartComponent from './abstract-smart-component.js';
 
 const createFilterMarkUp = (filter, isChecked) => {
   const {name, count} = filter;
@@ -27,7 +27,7 @@ const createFilterTemplate = (filters) => {
   );
 };
 
-export default class Filter extends AbstractComponent {
+export default class Filter extends AbstractSmartComponent {
   constructor(filters) {
     super();
 
@@ -36,5 +36,9 @@ export default class Filter extends AbstractComponent {
 
   getTemplate() {
     return createFilterTemplate(this._filters);
+  }
+
+  recoveryListeners() {
+
   }
 }
