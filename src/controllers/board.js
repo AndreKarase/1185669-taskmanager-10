@@ -57,8 +57,9 @@ export default class BoardController {
     this._tasks[index] = newData;
     taskController.render(newData);
 
+    const counts = getCounts(this._tasks);
     this._filterComponent._filters.forEach((it) => {
-      it.count = getCounts(this._tasks)[it.name];
+      it.count = counts[it.name];
     });
 
     this._filterComponent.rerender();

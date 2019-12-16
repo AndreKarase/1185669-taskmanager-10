@@ -38,7 +38,8 @@ export default class TaskController {
       this._mode = Mode.EDIT;
     });
 
-    this._taskEditComponent.setSubmitHandler(() => {
+    this._taskEditComponent.setSubmitHandler((evt) => {
+      evt.preventDefault();
       replace(this._taskComponent, this._taskEditComponent);
 
       this._mode = Mode.DEFAULT;
