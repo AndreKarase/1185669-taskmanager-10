@@ -15,10 +15,11 @@ render(siteHeaderElement, new SiteMenuComponent(), `beforeend`);
 
 const tasks = generateTasks(TASK_COUNT);
 const filters = generateFilters(tasks);
-render(siteMainElement, new FilterComponent(filters), `beforeend`);
+const filterComponent = new FilterComponent(filters);
+render(siteMainElement, filterComponent, `beforeend`);
 
 const boardComponent = new BoardComponent();
 render(siteMainElement, boardComponent, `beforeend`);
 
-const boardController = new BoardController(boardComponent.getElement());
+const boardController = new BoardController(boardComponent.getElement(), filterComponent);
 boardController.render(tasks);

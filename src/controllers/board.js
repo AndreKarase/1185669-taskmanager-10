@@ -1,38 +1,31 @@
 import LoadMoreButtonComponent from '../components/load-more-button.js';
-import TaskEditComponent from '../components/task-edit.js';
-import TaskComponent from '../components/task.js';
-import {render, remove, replace} from '../utils/render.js';
+import {render, remove} from '../utils/render.js';
+import {getCounts} from '../utils/common.js';
+import TaskController from './task.js';
 
 const SHOWING_TASKS_COUNT_ON_START = 8;
 const SHOWING_TASKS_COUNT_BY_BUTTON = 8;
 
 export default class BoardController {
-  constructor(container) {
+  constructor(container, filterComponent) {
     this._container = container;
+    this._tasks = [];
     this._loadMoreButtonComponent = new LoadMoreButtonComponent();
+    this._showedTaskControllers = [];
+    this._onDataChange = this._onDataChange.bind(this);
+    this._onViewChange = this._onViewChange.bind(this);
+    this._filterComponent = filterComponent;
   }
 
   render(tasks) {
-    const renderTask = (task) => {
-      const taskComponent = new TaskComponent(task);
-      const taskEditComponent = new TaskEditComponent(task);
-
-      taskComponent.setEditButtonClickHandler(() => {
-        replace(taskEditComponent, taskComponent);
-      });
-
-      taskEditComponent.setSubmitHandler(() => {
-        replace(taskComponent, taskEditComponent);
-      });
-
-      render(taskListElement, taskComponent, `beforeend`);
-    };
-
+    this._tasks = tasks;
     const taskListElement = this._container.querySelector(`.board__tasks`);
 
     let showingTasksCount = SHOWING_TASKS_COUNT_ON_START;
     for (let i = 0; i < showingTasksCount; i++) {
-      renderTask(tasks[i]);
+      const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
+      this._showedTaskControllers.push(taskController);
+      taskController.render(this._tasks[i]);
     }
 
     render(this._container, this._loadMoreButtonComponent, `beforeend`);
@@ -41,14 +34,38 @@ export default class BoardController {
       const prevTaskCount = showingTasksCount;
       showingTasksCount += SHOWING_TASKS_COUNT_BY_BUTTON;
 
-      if (showingTasksCount >= tasks.length) {
-        showingTasksCount = tasks.length;
+      if (showingTasksCount >= this._tasks.length) {
+        showingTasksCount = this._tasks.length;
         remove(this._loadMoreButtonComponent);
       }
 
       for (let i = prevTaskCount; i < showingTasksCount; i++) {
-        renderTask(tasks[i]);
+        const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
+        this._showedTaskControllers.push(taskController);
+        taskController.render(this._tasks[i]);
       }
     });
+  }
+
+  _onDataChange(taskController, oldData, newData) {
+    const index = this._tasks.findIndex((it) => it === oldData);
+
+    if (index === -1) {
+      return;
+    }
+
+    this._tasks[index] = newData;
+    taskController.render(newData);
+
+    const counts = getCounts(this._tasks);
+    this._filterComponent._filters.forEach((it) => {
+      it.count = counts[it.name];
+    });
+
+    this._filterComponent.rerender();
+  }
+
+  _onViewChange() {
+    this._showedTaskControllers.forEach((it) => it.setDefaultView());
   }
 }
