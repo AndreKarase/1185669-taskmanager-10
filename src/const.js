@@ -16,3 +16,13 @@ export const MONTH_NAMES = [
   `November`,
   `December`,
 ];
+
+export const FILTER_TYPES = [
+  `all`,
+  `overdue`,
+  `today`,
+  `favorite`,
+  `repeating`,
+  `tags`,
+  `archive`
+];

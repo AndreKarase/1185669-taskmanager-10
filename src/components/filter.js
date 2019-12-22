@@ -1,4 +1,10 @@
-import AbstractSmartComponent from './abstract-smart-component.js';
+import AbstractComponent from './abstract-component.js';
+
+const FILTER_ID_PREFIX = `filter__`;
+
+const getFilterNameById = (id) => {
+  return id.substring(FILTER_ID_PREFIX.length);
+};
 
 const createFilterMarkUp = (filter, isChecked) => {
   const {name, count} = filter;
@@ -6,7 +12,7 @@ const createFilterMarkUp = (filter, isChecked) => {
   return (
     `<input
       type="radio"
-      id="filter__all"
+      id="filter__${name}"
       class="filter__input visually-hidden"
       name="filter"
       ${isChecked ? `checked` : ``}
@@ -18,7 +24,7 @@ const createFilterMarkUp = (filter, isChecked) => {
 };
 
 const createFilterTemplate = (filters) => {
-  const filtersMarkup = filters.map((it, i) => createFilterMarkUp(it, i === 0)).join(`\n`);
+  const filtersMarkup = filters.map((it) => createFilterMarkUp(it, it.checked)).join(`\n`);
 
   return (
     `<section class="main__filter filter container">
@@ -27,7 +33,7 @@ const createFilterTemplate = (filters) => {
   );
 };
 
-export default class Filter extends AbstractSmartComponent {
+export default class Filter extends AbstractComponent {
   constructor(filters) {
     super();
 
@@ -38,7 +44,10 @@ export default class Filter extends AbstractSmartComponent {
     return createFilterTemplate(this._filters);
   }
 
-  recoveryListeners() {
-
+  setFilterChangeHandler(handler) {
+    this.getElement().addEventListener(`change`, (evt) => {
+      const filterName = getFilterNameById(evt.target.id);
+      handler(filterName);
+    });
   }
 }

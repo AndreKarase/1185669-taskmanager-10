@@ -1,71 +1,129 @@
 import LoadMoreButtonComponent from '../components/load-more-button.js';
 import {render, remove} from '../utils/render.js';
-import {getCounts} from '../utils/common.js';
-import TaskController from './task.js';
+import TaskController, {Mode} from './task.js';
 
 const SHOWING_TASKS_COUNT_ON_START = 8;
 const SHOWING_TASKS_COUNT_BY_BUTTON = 8;
 
+const EmptyTask = {
+  description: ``,
+  dueDate: null,
+  repeatingDays: {
+    'mo': false,
+    'tu': false,
+    'we': false,
+    'th': false,
+    'fr': false,
+    'sa': false,
+    'su': false,
+  },
+  tags: [],
+  color: `black`,
+  isFavorite: false,
+  isArchive: false,
+};
 export default class BoardController {
-  constructor(container, filterComponent) {
+  constructor(container, tasksModel) {
     this._container = container;
-    this._tasks = [];
+    this._tasksModel = tasksModel;
     this._loadMoreButtonComponent = new LoadMoreButtonComponent();
     this._showedTaskControllers = [];
+    this._showingTasksCount = SHOWING_TASKS_COUNT_ON_START;
+    this._creatingTask = null;
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
-    this._filterComponent = filterComponent;
+    this._onFilterChange = this._onFilterChange.bind(this);
+    this._onLoadButtonClick = this._onLoadButtonClick.bind(this);
+    this._tasksModel.setFilterChangeHandler(this._onFilterChange);
   }
 
-  render(tasks) {
-    this._tasks = tasks;
+  render() {
+    const tasks = this._tasksModel.getTasks();
+
     const taskListElement = this._container.querySelector(`.board__tasks`);
 
-    let showingTasksCount = SHOWING_TASKS_COUNT_ON_START;
-    for (let i = 0; i < showingTasksCount; i++) {
+    for (let i = 0; i < this._showingTasksCount; i++) {
       const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
       this._showedTaskControllers.push(taskController);
-      taskController.render(this._tasks[i]);
+      taskController.render(tasks[i], Mode.DEFAULT);
     }
 
-    render(this._container, this._loadMoreButtonComponent, `beforeend`);
+    remove(this._loadMoreButtonComponent);
 
-    this._loadMoreButtonComponent.setClickHandler(() => {
-      const prevTaskCount = showingTasksCount;
-      showingTasksCount += SHOWING_TASKS_COUNT_BY_BUTTON;
-
-      if (showingTasksCount >= this._tasks.length) {
-        showingTasksCount = this._tasks.length;
-        remove(this._loadMoreButtonComponent);
-      }
-
-      for (let i = prevTaskCount; i < showingTasksCount; i++) {
-        const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
-        this._showedTaskControllers.push(taskController);
-        taskController.render(this._tasks[i]);
-      }
-    });
+    if (this._showingTasksCount < tasks.length) {
+      render(this._container, this._loadMoreButtonComponent, `beforeend`);
+      this._loadMoreButtonComponent.setClickHandler(this._onLoadButtonClick);
+    }
   }
 
-  _onDataChange(taskController, oldData, newData) {
-    const index = this._tasks.findIndex((it) => it === oldData);
+  _onLoadButtonClick() {
+    const tasks = this._tasksModel.getTasks();
+    const taskListElement = this._container.querySelector(`.board__tasks`);
+    const prevTaskCount = this._showingTasksCount;
+    this._showingTasksCount += SHOWING_TASKS_COUNT_BY_BUTTON;
 
-    if (index === -1) {
+    if (this._showingTasksCount >= tasks.length) {
+      this._showingTasksCount = tasks.length;
+      remove(this._loadMoreButtonComponent);
+    }
+
+    for (let i = prevTaskCount; i < this._showingTasksCount; i++) {
+      const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
+      this._showedTaskControllers.push(taskController);
+      taskController.render(tasks[i], Mode.DEFAULT);
+    }
+  }
+
+  createTask() {
+    if (this._creatingTask) {
       return;
     }
 
-    this._tasks[index] = newData;
-    taskController.render(newData);
+    const taskListElement = this._container.querySelector(`.board__tasks`);
+    this._creatingTask = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
+    this._creatingTask.render(EmptyTask, Mode.ADDING);
+  }
 
-    const counts = getCounts(this._tasks);
-    this._filterComponent._filters.forEach((it) => {
-      it.count = counts[it.name];
-    });
+  _removeTasks() {
+    const taskListElement = this._container.querySelector(`.board__tasks`);
 
-    this._filterComponent.rerender();
+    taskListElement.innerHTML = ``;
+    this._showedTaskControllers = [];
+  }
+
+  _onDataChange(taskController, oldData, newData) {
+    if (oldData === EmptyTask) {
+      debugger
+      this._creatingTask = null;
+      this._tasksModel.addTask(newData);
+      taskController.render(newData, Mode.DEFAULT);
+
+      const destroyedTask = this._showedTaskControllers.pop();
+      destroyedTask.destoy();
+
+      this._showedTaskControllers.unshift(taskController);
+      this._showingTasksCount = this._showedTaskControllers.length;
+
+    } else if (newData === null) {
+      this._tasksModel.removeTask(oldData.id);
+      this._removeTasks();
+      this.render();
+
+    } else {
+      const isSuccess = this._tasksModel.updateTask(oldData.id, newData);
+
+      if (isSuccess) {
+        taskController.render(newData, Mode.DEFAULT);
+      }
+    }
   }
 
   _onViewChange() {
     this._showedTaskControllers.forEach((it) => it.setDefaultView());
+  }
+
+  _onFilterChange() {
+    this._removeTasks();
+    this.render();
   }
 }
