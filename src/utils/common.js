@@ -1,39 +1,24 @@
-export const getCounts = (tasks) => {
-  const result = {
-    all: tasks.length,
-    overdue: 0,
-    today: 0,
-    favorites: 0,
-    repeating: 0,
-    tags: 0,
-    archive: 0
-  };
+export const isRepeting = (repeatingDays) => {
+  return Object.values(repeatingDays).some((it) => it);
+};
 
-  tasks.forEach((task) => {
-    if (task.dueDate instanceof Date &&
-      task.dueDate < Date.now()) {
-      result.overdue++;
-    }
-    const today = new Date();
-    if (task.dueDate instanceof Date &&
-      task.dueDate.getDate() === today.getDate() &&
-      task.dueDate.getMonth() === today.getMonth() &&
-      task.dueDate.getFullYear() === today.getFullYear()) {
-      result.today++;
-    }
-    if (task.isFavorite) {
-      result.favorites++;
-    }
-    if (Object.values(task.repeatingDays).some((it) => it)) {
-      result.repeating++;
-    }
-    if (task.tags.size !== 0) {
-      result.tags++;
-    }
-    if (task.isArchive) {
-      result.archive++;
-    }
-  });
+export const isOverdue = (dueDate) => {
+  if (!dueDate) {
+    return false;
+  }
+
+  return dueDate < Date.now();
+};
+
+export const isToday = (dueDate) => {
+  if (!dueDate) {
+    return false;
+  }
+
+  const today = new Date();
+  const result = dueDate.getDate() === today.getDate() &&
+    dueDate.getMonth() === today.getMonth() &&
+    dueDate.getFullYear() === today.getFullYear();
 
   return result;
 };
