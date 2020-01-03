@@ -18,6 +18,7 @@ export default class Tasks {
 
   setTasks(tasks) {
     this._tasks = Array.from(tasks);
+    this._dataChangeHandlers.forEach((handler) => handler());
   }
 
   updateTask(id, task) {
@@ -29,6 +30,7 @@ export default class Tasks {
 
     this._tasks[index] = task;
 
+    this._filterChangeHandlers.forEach((handler) => handler());
     this._dataChangeHandlers.forEach((handler) => handler());
     return true;
   }

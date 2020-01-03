@@ -42,6 +42,8 @@ export default class BoardController {
 
     const taskListElement = this._container.querySelector(`.board__tasks`);
 
+    this._showingTasksCount = Math.min(tasks.length, SHOWING_TASKS_COUNT_ON_START);
+
     for (let i = 0; i < this._showingTasksCount; i++) {
       const taskController = new TaskController(taskListElement, this._onDataChange, this._onViewChange);
       this._showedTaskControllers.push(taskController);
@@ -58,6 +60,7 @@ export default class BoardController {
 
   _onLoadButtonClick() {
     const tasks = this._tasksModel.getTasks();
+
     const taskListElement = this._container.querySelector(`.board__tasks`);
     const prevTaskCount = this._showingTasksCount;
     this._showingTasksCount += SHOWING_TASKS_COUNT_BY_BUTTON;
@@ -93,7 +96,6 @@ export default class BoardController {
 
   _onDataChange(taskController, oldData, newData) {
     if (oldData === EmptyTask) {
-      debugger
       this._creatingTask = null;
       this._tasksModel.addTask(newData);
       taskController.render(newData, Mode.DEFAULT);
